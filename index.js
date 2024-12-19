@@ -87,14 +87,27 @@ async function run() {
 
     app.get("/jobs", async (req, res) => {
       const email = req.query.email;
+      const page = parseInt(req.query.page);
+      const size = parseInt(req.query.size);
+
+      console.log(page, size)
       let query = {};
       if(email){
         query = {hr_email: email}
       }
-      const cursor = jobsApplication.find(query);
-      const result = await cursor.toArray();
+      // const cursor = jobsApplication.find(query);
+      const result = await jobsApplication.find(query)
+      .skip(page * size)
+      .limit(size)
+      .toArray();
       res.send(result)
     });
+
+    // database jobs count
+    app.get("/jobsCount", async(req,res) =>{
+      const count = await jobsApplication.estimatedDocumentCount();
+      res.send({count});
+    })
 
     app.get("/jobs/:id", async (req, res) => {
       const id = req.params.id;
